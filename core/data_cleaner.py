@@ -107,8 +107,11 @@ class DataCleaner:
     def _clean_special_cases(self, df: pd.DataFrame) -> pd.DataFrame:
         """Clean special edge cases"""
         # Remove zero-width characters
+        zero_width_chars = dict.fromkeys(map(ord, "\u200b\u200c\u200d\ufeff"), None)
         for col in df.select_dtypes(include=['object']).columns:
-            df[col] = df[col].str.replace(r'[\u200b\u200c\u200d\ufeff]', '', regex=True)
+            df[col] = df[col].apply(
+                lambda value: value.translate(zero_width_chars) if isinstance(value, str) else value
+            )
         
         return df
     
